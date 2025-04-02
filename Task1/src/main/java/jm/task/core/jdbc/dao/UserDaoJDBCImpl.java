@@ -19,8 +19,8 @@ public class UserDaoJDBCImpl implements UserDao {
                     "(id SERIAL PRIMARY KEY, name VARCHAR(255), last_name VARCHAR(255), age INT)");
         } catch (SQLException e) {
             e.printStackTrace();
-        }
 
+        }
     }
 
     public void dropUsersTable() {

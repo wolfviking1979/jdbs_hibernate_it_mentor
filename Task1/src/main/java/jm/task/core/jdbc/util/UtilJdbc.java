@@ -24,7 +24,7 @@ public class UtilJdbc {
 
     public static void loadProperties() {
         try( var inputStream = UtilJdbc.class
-                .getClassLoader().getResourceAsStream("application.properties")) {
+                .getClassLoader().getResourceAsStream("database.properties")) {
             properties.load(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);

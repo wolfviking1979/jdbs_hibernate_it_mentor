@@ -26,7 +26,7 @@ public class UtilHibernate {
 
     public static void loadProperties() {
         try( var inputStream = UtilJdbc.class
-                .getClassLoader().getResourceAsStream("application.properties")) {
+                .getClassLoader().getResourceAsStream("database.properties")) {
             properties.load(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -51,9 +51,9 @@ public class UtilHibernate {
                 settings.put(Environment.URL, getProperty(URL));
                 settings.put(Environment.USER, getProperty(USERNAME));
                 settings.put(Environment.PASS, getProperty(PASSWORD));
-                settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
-                settings.put(Environment.SHOW_SQL, "false");
-                settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+                settings.put(Environment.DIALECT, "org.hibernate.dialect.postgresql.PostgreSQL82Dialect");
+                settings.put(Environment.SHOW_SQL, "true");
+                settings.put(Environment.HBM2DDL_AUTO, "update");
 
                 configuration.setProperties(settings);
                 configuration.addAnnotatedClass(User.class);
@@ -65,7 +65,6 @@ public class UtilHibernate {
             } catch (Exception e) {
                 System.out.println("Ошибка при создании SessionFactory");
                 e.printStackTrace();
-
             }
         }
         return sessionFactory;
