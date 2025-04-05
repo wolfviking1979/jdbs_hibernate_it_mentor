@@ -1,71 +1,38 @@
 package jm.task.core.jdbc.util;
 
 import jm.task.core.jdbc.model.User;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
-import java.io.IOException;
-import java.util.Properties;
-
 public class UtilHibernate {
-    public static Properties properties = new Properties();
-
-    private UtilHibernate() {
-    }
-
-    static {
-        loadProperties();
-    }
-
-    public static String getProperty(String key) {
-        return properties.getProperty(key);
-    }
-
-    public static void loadProperties() {
-        try( var inputStream = UtilJdbc.class
-                .getClassLoader().getResourceAsStream("database.properties")) {
-            properties.load(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private static final String DRIVER = "db.driver";
-    private static final String URL = "db.url";
-    private static final String USERNAME = "db.username";
-    private static final String PASSWORD = "db.password";
-
+    private static final String DRIVER = "org.postgresql.Driver";
+    private static final String HOST = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String LOGIN = "postgres";
+    private static final String PASSWORD = "postgres";
     private static SessionFactory sessionFactory = null;
 
-    public static SessionFactory getSessionFactory() {
-        if (sessionFactory == null) {
-            try {
-                Configuration configuration = new Configuration().configure();
-                Properties settings = new Properties();
+    public static SessionFactory getConnection() {
 
-                settings.put(Environment.DRIVER, getProperty(DRIVER));
-                settings.put(Environment.URL, getProperty(URL));
-                settings.put(Environment.USER, getProperty(USERNAME));
-                settings.put(Environment.PASS, getProperty(PASSWORD));
-                settings.put(Environment.DIALECT, "org.hibernate.dialect.postgresql.PostgreSQL82Dialect");
-                settings.put(Environment.SHOW_SQL, "true");
-                settings.put(Environment.HBM2DDL_AUTO, "update");
+        try {
+            Configuration configuration = new Configuration()
+                    .setProperty("hibernate.connection.driver_class", DRIVER)
+                    .setProperty("hibernate.connection.url", HOST)
+                    .setProperty("hibernate.connection.username", LOGIN)
+                    .setProperty("hibernate.connection.password", PASSWORD)
+                    .setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL10Dialect")
+                    .addAnnotatedClass(User.class)
+                    .setProperty("hibernate.c3p0.min_size","5")
+                    .setProperty("hibernate.c3p0.max_size","200")
+                    .setProperty("hibernate.c3p0.max_statements","200");
 
-                configuration.setProperties(settings);
-                configuration.addAnnotatedClass(User.class);
-
-                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                        .applySettings(configuration.getProperties()).build();
-
-                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
-            } catch (Exception e) {
-                System.out.println("Ошибка при создании SessionFactory");
-                e.printStackTrace();
-            }
+            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                    .applySettings(configuration.getProperties()).build();
+            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        } catch (HibernateException e) {
+            e.printStackTrace();
         }
         return sessionFactory;
     }
